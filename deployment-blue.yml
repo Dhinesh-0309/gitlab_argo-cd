@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argocd-blue
+  labels:
+    app: argocd
+    version: blue
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: argocd
+      version: blue
+  template:
+    metadata:
+      labels:
+        app: argocd
+        version: blue
+    spec:
+      containers:
+      - name: argocd
+        image: dhineshpandian/argocdtest::$CI_COMMIT_REF_NAME  # Replace with your Docker Hub image
+        ports:
+        - containerPort: 8000
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"

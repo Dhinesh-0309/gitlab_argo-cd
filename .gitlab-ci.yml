@@ -5,7 +5,7 @@ stages:
 
 variables:
   DOCKER_REGISTRY: "docker.io"
-  DOCKER_IMAGE: "<username>/django-todo-app" 
+  DOCKER_IMAGE: "dhineshpandian/argocdtest" 
   IMAGE_TAG: "$CI_COMMIT_REF_NAME" 
 
 before_script:
@@ -30,7 +30,12 @@ push:
 deploy:
   stage: deploy
   script:
-    - kubectl apply -f k8s/deployment-blue.yaml
-    - kubectl apply -f k8s/service.yaml
+    - |
+      # Apply the deployment files for either blue or green version
+      if [[ "$CI_COMMIT_REF_NAME" == "main" ]]; then
+        # Assuming `main` branch deploys the new version
+        kubectl apply -f k8s/deployment-blue.yaml  # Deploy Blue
+        kubectl patch service argocd-service -p '{"spec": {"selector": {"app": "argocd", "version": "blue"}}}'
+      fi
   only:
     - main
